@@ -1,7 +1,7 @@
 # Solar System ☀️          🌑             🌕            🌎          🔴          🌕           🪐           🔵           🔵
 This is a 3d WebGL demo of the solar system written in vanilla Javascript.
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://github.com/gutche/solar-system/blob/main/LICENSE)
 ## 👤 Collaborators
 
 |          **Name**           |         **Github Username**         |
