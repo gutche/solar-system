@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="auxiliars.js"></script>
+    <script type="text/javascript" src="shader.js"></script>
+    <script type="text/javascript" src="ubo.js"></script>
+    <script type="text/javascript" src="cube.js"></script>
+    <script type="text/javascript" src="gl-matrix.js"></script>
+    <script type="text/javascript" src="geometry.js"></script>
+    <style type="text/css">
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        body
+        {
+            margin: 0;
+            overflow: hidden;
+        }
+
+    </style>
+    <script type="text/javascript">
+        const mat4 = glMatrix.mat4;
+        const vec3 = glMatrix.vec3;
+        const vec2 = glMatrix.vec2;
+        // Converts from degrees to radians.
+        Math.radians = function(degrees) {
+          return degrees * Math.PI / 180;
+        };
+         
+        // Converts from radians to degrees.
+        Math.degrees = function(radians) {
+          return radians * 180 / Math.PI;
+        };
+    </script>
+<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
+precision mediump float;
+
+// Unif. Buffer Object
+uniform UBO {
+    mat4 projection;
+    mat4 view;
+};
+
+void main( )
+{
+    gl_Position = projection * view * model * vec4( ... );
+}
+
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">#version 300 es
+precision mediump float;
+
+out vec4 fragColor;
+
+void main( )
+{
+    fragColor = vec4( ... )
+}
+</script>
+
+</head>
+<body>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+<script type="text/javascript">
+    const gl = createContext( "myCanvas" );
+
+    // ---------------------------------------------------
+    // CREAR TODOS LOS SHADERPROGRAMS QUE NECESITES
+    // ---------------------------------------------------
+    let shaderProgram = new ShaderProgram( );
+
+    // ---------------------------------------------------
+    // CREAMOS EL UBO Y VINCULAMOS TODOS LOS SHADERPROGRAM
+    // QUE HARÁN USO DE ESTE UBO
+    // ---------------------------------------------------
+    // TODO: ShaderProgram debe ser algún Programa que crees y que contenga el UBO
+    //let ubo = new UBO( "UBO", shaderProgram, [ "projection", "view" ]); // Aquí añade todos los uniformes que quieres compartir
+
+    // TODO: Realiza esta llamada con cada programa que vayas a utilizar 
+    // ubo.attachProgram( shaderProgram );
+
+
+    // ---------------------------------------------------
+    // CREA EL VAO, VBO'S Y EBO PARA LA ESFERA (createSphere())
+    // CREA EL VAO, VOB'S Y EBO PARA EL ANILLO (createRing())
+    //  {
+    //    "vertices": vertices,
+    //    normals: normals,
+    //    texCoords: uvs,
+    //    indices: indices
+    // }
+    // ---------------------------------------------------
+    // TODO: Crea una esfera y sube la geometría a la tarjeta gráfica
+    const sphereGeo = createSphere( );
+    const ringGeo = createRing( );
+
+    gl.clearColor( 1.0, 0.5, 0.0, 1.0 );
+    gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
+
+    function renderFunc( time )
+    {
+        gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+        gl.enable( gl.DEPTH_TEST );
+
+        time *= 0.001; // to seconds
+
+    	var proj = mat4.create( );
+    	mat4.perspective(proj, Math.radians( 60.0 ), gl.canvas.width/gl.canvas.height, 0.001, 1000.0 );
+    	var view = mat4.create( );
+
+        // TODO: Tienes que activar al menos un programa
+        shaderProgram.bind( );
+
+        // Aquí subimos los datos para la proyección y la vista
+        //ubo.uploadData( "projection", proj );
+        //ubo.uploadData( "view", view );
+        //ubo.uploadAll( ); // Esta llamada sube todos los datos de golpe
+        
+        // A partir de aquí, subimos matriz model y demás cosas para cada esfera.
+
+
+
+        requestAnimationFrame( renderFunc );
+    }
+
+    document.addEventListener('keydown', function(event) {
+        /*
+            65 => A
+            68 => D
+            83 => S
+            87 => W
+            81 => Q
+            69 => E
+
+            37 => Flecha izq
+            39 => Fecha drcha
+            38 => Fecha arriba
+            40 => Fecha abajo
+
+        */
+        if( event.keyCode == 81 ) // Q
+        {
+        }
+        
+    } );
+
+    function resizeCanvas()
+    {
+        const canvas = gl.canvas;
+        // Lookup the size the browser is displaying the canvas in CSS pixels.
+        const displayWidth  = window.clientWidth;
+        const displayHeight = window.innerHeight;
+
+        // Check if the canvas is not the same size.
+        const needResize = canvas.width  !== displayWidth ||
+                           canvas.height !== displayHeight;
+
+        if (needResize) {
+            // Make the canvas the same size
+            canvas.width  = displayWidth;
+            canvas.height = displayHeight;
+            gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    renderFunc( 0.0 );
+</script>
+</body>
+</html>
