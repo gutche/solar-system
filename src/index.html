@@ -49,15 +49,28 @@
 		<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
         precision mediump float;
 
-        // Unif. Buffer Object
+        in vec3 aPos;
+		in vec3 aNormal;
+		in vec3 aTexCoord;
+
+		// Unif. Buffer Object
         uniform UBO {
             mat4 projection;
             mat4 view;
+			mat4 model;
         };
 
-        void main( )
+		out vec3 Normal;
+        out vec3 fragPos;
+
+		void main()
         {
-            gl_Position = projection * view * model * vec4( ... );
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
+        Normal = aNormal;
+        mat3 normalM = mat3( transpose(inverse( model ) ) );
+        Normal = normalM * aNormal;
+
+        fragPos = vec3(model * vec4(aPos, 1.0)); // (model * vec4(aPos, 1.0)).xyz;
         }
         </script>
 		<!-- prettier-ignore -->
@@ -66,11 +79,32 @@
 			type="x-shader/x-fragment">#version 300 es
         precision mediump float;
 
-        out vec4 fragColor;
+        in vec3 Normal;
+        in vec3 fragPos; 
 
-        void main( )
+        uniform vec3 lightPos;
+
+        out vec4 FragColor;
+
+        void main()
         {
-            fragColor = vec4( ... )
+        vec3 lightColor = vec3(0.0, 1.0, 0.0);
+        vec3 objectColor = vec3(1.0, 0.0, 1.0);
+        //vec3 lightPos = vec3( 10.0, 0.0, 1.0);
+
+
+        // ambient
+        float ambientStrength = 0.1;
+        vec3 ambient = ambientStrength * lightColor;
+
+        // diffuse
+        vec3 norm = normalize(Normal);
+        vec3 lightDir = normalize(lightPos - fragPos);
+        float diff = max(dot(norm, lightDir), 0.0);
+        vec3 diffuse = diff * lightColor;
+
+        vec3 result = (ambient + diffuse) * objectColor;
+        FragColor = vec4(result, 1.0);
         }
 		</script>
 	</head>
@@ -86,20 +120,32 @@
 			// CREAR TODOS LOS SHADERPROGRAMS QUE NECESITES
 			// ---------------------------------------------------
 			let shaderProgram = new ShaderProgram();
+			shaderProgram.createVertexShader(
+				document.getElementById("shader-vs").text
+			);
+			shaderProgram.createFragmentShader(
+				document.getElementById("shader-fs").text
+			);
+			shaderProgram.compile();
+			shaderProgram.link();
 
 			// ---------------------------------------------------
 			// CREAMOS EL UBO Y VINCULAMOS TODOS LOS SHADERPROGRAM
 			// QUE HARÁN USO DE ESTE UBO
 			// ---------------------------------------------------
 			// TODO: ShaderProgram debe ser algún Programa que crees y que contenga el UBO
-			//let ubo = new UBO( "UBO", shaderProgram, [ "projection", "view" ]); // Aquí añade todos los uniformes que quieres compartir
+			let ubo = new UBO("UBO", shaderProgram, [
+				"projection",
+				"view",
+				"model",
+			]); // Aquí añade todos los uniformes que quieres compartir
 
 			// TODO: Realiza esta llamada con cada programa que vayas a utilizar
-			// ubo.attachProgram( shaderProgram );
+			ubo.attachProgram(shaderProgram);
 
 			// ---------------------------------------------------
 			// CREA EL VAO, VBO'S Y EBO PARA LA ESFERA (createSphere())
-			// CREA EL VAO, VOB'S Y EBO PARA EL ANILLO (createRing())
+			// CREA EL VAO, VBO'S Y EBO PARA EL ANILLO (createRing())
 			//  {
 			//    "vertices": vertices,
 			//    normals: normals,
@@ -110,6 +156,54 @@
 			// TODO: Crea una esfera y sube la geometría a la tarjeta gráfica
 			const sphereGeo = createSphere();
 			const ringGeo = createRing();
+
+			const VAO = gl.createVertexArray();
+			const VBO = gl.createBuffer();
+			const VBO2 = gl.createBuffer();
+			const VBO3 = gl.createBuffer();
+			const EBO = gl.createBuffer();
+
+			// position attribute
+			gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(sphereGeo.vertices),
+				gl.STATIC_DRAW
+			);
+
+			gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(0);
+
+			// normal attribute
+			gl.bindBuffer(gl.ARRAY_BUFFER, VBO2);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(sphereGeo.normals),
+				gl.STATIC_DRAW
+			);
+
+			gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(1);
+
+			// texCoord attribute
+			gl.bindBuffer(gl.ARRAY_BUFFER, VBO3);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(sphereGeo.texCoords),
+				gl.STATIC_DRAW
+			);
+
+			gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(2);
+
+			gl.vertexAttribPointer(3, 2, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(3);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
+			gl.bufferData(
+				gl.ELEMENT_ARRAY_BUFFER,
+				new Uint32Array(sphereGeo.indices),
+				gl.STATIC_DRAW
+			);
 
 			gl.clearColor(1.0, 0.5, 0.0, 1.0);
 			gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -130,13 +224,27 @@
 				);
 				var view = mat4.create();
 
+				var model = mat4.create();
+				mat4.translate(model, model, [0.0, 0.0, 0.0]);
+				//mat4.rotate(model, model, Math.radians(angle), [1.0, 0.5, 0.0]);
+
 				// TODO: Tienes que activar al menos un programa
 				shaderProgram.bind();
 
 				// Aquí subimos los datos para la proyección y la vista
-				//ubo.uploadData( "projection", proj );
-				//ubo.uploadData( "view", view );
-				//ubo.uploadAll( ); // Esta llamada sube todos los datos de golpe
+				ubo.uploadData("projection", proj);
+				ubo.uploadData("view", view);
+				ubo.uploadData("model", model);
+				ubo.uploadAll(); // Esta llamada sube todos los datos de golpe
+
+				gl.bindVertexArray(VAO);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
+				gl.drawElements(
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
+				);
 
 				// A partir de aquí, subimos matriz model y demás cosas para cada esfera.
 
