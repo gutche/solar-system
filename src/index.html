@@ -49,28 +49,21 @@
 		<script id="shader-vs" type="x-shader/x-vertex">#version 300 es
         precision mediump float;
 
-        in vec3 aPos;
-		in vec3 aNormal;
-		in vec3 aTexCoord;
+        layout (location = 0) in vec3 aPos;
+		layout (location = 1) in vec3 aNormal;
+		layout (location = 2) in vec3 aTexCoord;
 
 		// Unif. Buffer Object
         uniform UBO {
             mat4 projection;
             mat4 view;
-			mat4 model;
         };
 
-		out vec3 Normal;
-        out vec3 fragPos;
+		uniform mat4 model;
 
 		void main()
         {
         gl_Position = projection * view * model * vec4(aPos, 1.0);
-        Normal = aNormal;
-        mat3 normalM = mat3( transpose(inverse( model ) ) );
-        Normal = normalM * aNormal;
-
-        fragPos = vec3(model * vec4(aPos, 1.0)); // (model * vec4(aPos, 1.0)).xyz;
         }
         </script>
 		<!-- prettier-ignore -->
@@ -79,32 +72,11 @@
 			type="x-shader/x-fragment">#version 300 es
         precision mediump float;
 
-        in vec3 Normal;
-        in vec3 fragPos; 
-
-        uniform vec3 lightPos;
-
         out vec4 FragColor;
 
         void main()
         {
-        vec3 lightColor = vec3(0.0, 1.0, 0.0);
-        vec3 objectColor = vec3(1.0, 0.0, 1.0);
-        //vec3 lightPos = vec3( 10.0, 0.0, 1.0);
-
-
-        // ambient
-        float ambientStrength = 0.1;
-        vec3 ambient = ambientStrength * lightColor;
-
-        // diffuse
-        vec3 norm = normalize(Normal);
-        vec3 lightDir = normalize(lightPos - fragPos);
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * lightColor;
-
-        vec3 result = (ambient + diffuse) * objectColor;
-        FragColor = vec4(result, 1.0);
+        FragColor = vec4(1.0, 0.5, 0.8, 1.0);
         }
 		</script>
 	</head>
@@ -128,17 +100,15 @@
 			);
 			shaderProgram.compile();
 			shaderProgram.link();
+			shaderProgram.autocatching();
 
 			// ---------------------------------------------------
 			// CREAMOS EL UBO Y VINCULAMOS TODOS LOS SHADERPROGRAM
 			// QUE HARÁN USO DE ESTE UBO
 			// ---------------------------------------------------
 			// TODO: ShaderProgram debe ser algún Programa que crees y que contenga el UBO
-			let ubo = new UBO("UBO", shaderProgram, [
-				"projection",
-				"view",
-				"model",
-			]); // Aquí añade todos los uniformes que quieres compartir
+			let ubo = new UBO("UBO", shaderProgram, ["projection", "view"]); // Aquí añade todos los uniformes que quieres compartir
+			console.log(ubo);
 
 			// TODO: Realiza esta llamada con cada programa que vayas a utilizar
 			ubo.attachProgram(shaderProgram);
@@ -162,6 +132,8 @@
 			const VBO2 = gl.createBuffer();
 			const VBO3 = gl.createBuffer();
 			const EBO = gl.createBuffer();
+
+			gl.bindVertexArray(VAO);
 
 			// position attribute
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
@@ -196,8 +168,6 @@
 			gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(2);
 
-			gl.vertexAttribPointer(3, 2, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(3);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
 			gl.bufferData(
 				gl.ELEMENT_ARRAY_BUFFER,
@@ -223,6 +193,7 @@
 					1000.0
 				);
 				var view = mat4.create();
+				mat4.translate(view, view, [0.0, 0.0, -20.0]);
 
 				var model = mat4.create();
 				mat4.translate(model, model, [0.0, 0.0, 0.0]);
@@ -231,14 +202,14 @@
 				// TODO: Tienes que activar al menos un programa
 				shaderProgram.bind();
 
+				shaderProgram.setUniformMat4("model", model);
+
 				// Aquí subimos los datos para la proyección y la vista
 				ubo.uploadData("projection", proj);
 				ubo.uploadData("view", view);
-				ubo.uploadData("model", model);
 				ubo.uploadAll(); // Esta llamada sube todos los datos de golpe
 
 				gl.bindVertexArray(VAO);
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
 				gl.drawElements(
 					gl.TRIANGLES,
 					sphereGeo.indices.length,
