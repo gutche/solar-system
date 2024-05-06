@@ -327,7 +327,7 @@
 					40 => Fecha abajo
 
 				*/
-				var cameraSpeed = 2; // Speed
+				var cameraSpeed = 0.4; // Speed
 				const cameraFrontNormalized=vec3.normalize(vec3.create(), cameraFront);
 				const cameraRight = vec3.cross(vec3.create(), cameraFrontNormalized, cameraUp);
 				switch (event.keyCode) {
