@@ -93,7 +93,7 @@
 			height="500"></canvas>
 		<script type="text/javascript">
 			const gl = createContext("myCanvas");
-
+			const canvas = document.getElementById('myCanvas'); 
 			// ---------------------------------------------------
 			// CREAR TODOS LOS SHADERPROGRAMS QUE NECESITES
 			// ---------------------------------------------------
@@ -108,6 +108,17 @@
 			shaderProgram.link();
 			shaderProgram.autocatching();
 
+
+			 // variables to control translation and rotation
+			var cameraPosition = vec3.fromValues(0.0, 0.0, -20.0); //Camera pointing at origin
+			var cameraFront = vec3.fromValues(0.0, 0.0, 1.0);
+			var cameraUp = [0, 1, 0];
+	
+			let lastX = 250;
+			let lastY = 250;
+			let firstMouse = true;
+			let yaw = 70.0;
+			let pitch = 0.0;
 			// ---------------------------------------------------
 			// CREAMOS EL UBO Y VINCULAMOS TODOS LOS SHADERPROGRAM
 			// QUE HARÁN USO DE ESTE UBO
@@ -235,7 +246,9 @@
 						1000.0
 				);
 				var view = mat4.create();
-				mat4.translate(view, view, [0.0, 0.0, -20.0]);
+				mat4.lookAt(view, cameraPosition, vec3.add(vec3.create(), cameraPosition, cameraFront), cameraUp);
+            
+				//mat4.translate(view, view, [0.0, 0.0, -20.0]);
 
 				// Sun model
 				var sunModel = mat4.create();
@@ -293,25 +306,106 @@
 				requestAnimationFrame(renderFunc);
 			}
 
+			document.addEventListener("pointerlockchange", lockChangeAlert, false);
 			document.addEventListener("keydown", function (event) {
 				/*
-            65 => A
-            68 => D
-            83 => S
-            87 => W
-            81 => Q
-            69 => E
+					65 => A
+					68 => D
+					83 => S
+					87 => W
+					81 => Q
+					69 => E
 
-            37 => Flecha izq
-            39 => Fecha drcha
-            38 => Fecha arriba
-            40 => Fecha abajo
+					37 => Flecha izq
+					39 => Fecha drcha
+					38 => Fecha arriba
+					40 => Fecha abajo
 
-        */
-				if (event.keyCode == 81) {
-					// Q
+				*/
+				var cameraSpeed = 2; // Speed
+				const cameraFrontNormalized=vec3.normalize(vec3.create(), cameraFront);
+				const cameraRight = vec3.cross(vec3.create(), cameraFrontNormalized, cameraUp);
+				switch (event.keyCode) {
+					//translation
+					case 87: // Flecha izquierda
+					vec3.add(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraFrontNormalized, cameraSpeed));
+						break;
+					case 68: // Flecha arriba
+						vec3.add(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraRight, cameraSpeed));
+
+						break;
+					case 83: // Flecha derecha
+						vec3.sub(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraFrontNormalized, cameraSpeed));
+						break;
+					case 65: // Flecha abajo
+						vec3.sub(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraRight, cameraSpeed));
+						break;
+					case 81: // P
+						cameraPosition[1] += cameraSpeed;
+						break;
+               	 	case 69: // O
+						cameraPosition[1] -= cameraSpeed;
+						break;
 				}
+			
 			});
+
+			function mouse_callback(event) {
+				
+				console.log("X:", yaw);
+				console.log("Y:", pitch);
+				let x=event.movementX;
+				let y=event.movementY;
+				const sensitivity = 0.1;
+
+				if (firstMouse) {
+					lastX = x;
+					lastY = y;
+					firstMouse = false;
+				}
+				else{
+					x+=lastX;
+					y+=lastY;
+				}
+			
+				if (pitch > 89.0) pitch = 89.0;
+				if (pitch < -89.0) pitch = -89.0;
+				
+				const xoffset = x - lastX;
+				const yoffset = lastY - y;
+				lastX = x;
+				lastY = y;
+	
+				yaw += xoffset * sensitivity;
+				pitch += yoffset * sensitivity;
+
+				const direction = vec3.create();
+				direction[0] = Math.cos(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+				direction[1] = Math.sin(Math.radians(pitch));
+				direction[2] = Math.sin(Math.radians(yaw)) * Math.cos(Math.radians(pitch));
+				vec3.normalize(cameraFront, direction);
+				
+			}
+
+			//Mouse movement event listener 
+			canvas.addEventListener("click", async () => {
+				if(!document.pointerLockElement) {
+					await canvas.requestPointerLock({
+					unadjustedMovement: true,
+					});
+				}
+				});
+			
+			
+			function lockChangeAlert() {
+				if (document.pointerLockElement === canvas) {
+					console.log("The pointer lock status is now locked");
+					document.addEventListener("mousemove", mouse_callback, false);
+				} else {
+					console.log("The pointer lock status is now unlocked");
+					document.removeEventListener("mousemove", mouse_callback, false);
+				}
+			}
 
 			function resizeCanvas() {
 				const canvas = gl.canvas;
