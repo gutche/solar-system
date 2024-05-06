@@ -332,23 +332,23 @@
 				const cameraRight = vec3.cross(vec3.create(), cameraFrontNormalized, cameraUp);
 				switch (event.keyCode) {
 					//translation
-					case 87: // Flecha izquierda
+					case 87: 
 					vec3.add(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraFrontNormalized, cameraSpeed));
 						break;
-					case 68: // Flecha arriba
+					case 68: 
 						vec3.add(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraRight, cameraSpeed));
 
 						break;
-					case 83: // Flecha derecha
+					case 83: 
 						vec3.sub(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraFrontNormalized, cameraSpeed));
 						break;
-					case 65: // Flecha abajo
+					case 65: 
 						vec3.sub(cameraPosition, cameraPosition, vec3.scale(vec3.create(), cameraRight, cameraSpeed));
 						break;
-					case 81: // P
+					case 81: 
 						cameraPosition[1] += cameraSpeed;
 						break;
-               	 	case 69: // O
+               	 	case 69:
 						cameraPosition[1] -= cameraSpeed;
 						break;
 				}
