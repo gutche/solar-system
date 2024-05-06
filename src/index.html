@@ -234,34 +234,37 @@
 				gl.enable(gl.DEPTH_TEST);
 
 				time *= 0.001; // to seconds
-				const sunAngle = time * 25.0;
-				const earthAngle = time * 1.5; // Speed & Direction
 
 				var proj = mat4.create();
 				mat4.perspective(
-						proj,
-						Math.radians(60.0),
-						gl.canvas.width / gl.canvas.height,
-						0.001,
-						1000.0
+					proj,
+					Math.radians(60.0),
+					gl.canvas.width / gl.canvas.height,
+					0.001,
+					1000.0
 				);
 				var view = mat4.create();
 				mat4.lookAt(view, cameraPosition, vec3.add(vec3.create(), cameraPosition, cameraFront), cameraUp);
             
 				//mat4.translate(view, view, [0.0, 0.0, -20.0]);
 
+				const sunRotationItSelf = time * 25.0;
+
 				// Sun model
 				var sunModel = mat4.create();
 				mat4.translate(sunModel, sunModel, [0.0, 6.5, 0.0]);
-				mat4.rotate(sunModel, sunModel, Math.radians(sunAngle), [0.0, 1.0, 0.0]);
+				mat4.rotate(sunModel, sunModel, Math.radians(sunRotationItSelf), [0.0, 1.0, 0.0]);
+
+				const earthRotationAroundSun = time * 0.5;
+				const earthRotationItSelf = time * 30.0;
 
 				// Earth model
 				const earthModel = mat4.create();
-				const earthOrbitRadius = 8.0; // Radius of the earth's orbit
-				const earthPositionX = Math.cos(earthAngle) * earthOrbitRadius;
-				const earthPositionZ = Math.sin(earthAngle) * earthOrbitRadius;
+				const earthOrbitRadius = 5.0; // Radius of the earth's orbit
+				const earthPositionX = Math.cos(earthRotationAroundSun) * earthOrbitRadius;
+				const earthPositionZ = Math.sin(earthRotationAroundSun) * earthOrbitRadius;
 				mat4.translate(earthModel, earthModel, [earthPositionX, 6.5, earthPositionZ]);
-				mat4.rotate(earthModel, earthModel, Math.radians(earthAngle), [0.0, 1.0, 0.0]);
+				mat4.rotate(earthModel, earthModel, Math.radians(earthRotationItSelf), [0.0, 1.0, 0.0]);
 
 				// Render the sun
 				shaderProgram.bind();
@@ -276,12 +279,13 @@
 				ubo.uploadData("view", view);
 				ubo.uploadAll();
 
+				// Draw the sun
 				gl.bindVertexArray(VAO);
 				gl.drawElements(
-						gl.TRIANGLES,
-						sphereGeo.indices.length,
-						gl.UNSIGNED_INT,
-						0
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
 				);
 
 				// Render the earth
@@ -296,11 +300,12 @@
 				ubo.uploadData("view", view);
 				ubo.uploadAll();
 
+				// Draw the earth
 				gl.drawElements(
-						gl.TRIANGLES,
-						sphereGeo.indices.length,
-						gl.UNSIGNED_INT,
-						0
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
 				);
 
 				requestAnimationFrame(renderFunc);
