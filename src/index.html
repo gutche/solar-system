@@ -194,6 +194,7 @@
 
 			const sunTexture = loadTexture("../resources/sun.png");
 			const earthTexture = loadTexture("../resources/earth_diffuse.jpg");
+			const moonTexture = loadTexture("../resources/moon.png");
 
 			function loadTexture(url) {
 				const texture = gl.createTexture();
@@ -268,23 +269,42 @@
 				mat4.lookAt(view, cameraPosition, vec3.add(vec3.create(), cameraPosition, cameraFront), cameraUp);
 				// mat4.translate(view, view, [0.0, 0.0, -20.0]);
 
+				const modelPosition = 6.5;
+
 				// Sun model
 				const sunModel = mat4.create();
-				const sunRotationItSelf = time * 25.0;
+				const sunScale = 2.0;
+				const sunRotationItSelf = time * 20.0;
 
-				mat4.translate(sunModel, sunModel, [0.0, 6.5, 0.0]);
+				mat4.translate(sunModel, sunModel, [0.0, modelPosition, 0.0]);
+				mat4.scale(sunModel, sunModel, [sunScale, sunScale, sunScale]);
 				mat4.rotate(sunModel, sunModel, Math.radians(sunRotationItSelf), [0.0, 1.0, 0.0]);
 
 				// Earth model
 				const earthModel = mat4.create();
+				const earthScale = 1.0;
 				const earthRotationAroundSun = time * 0.5;
 				const earthRotationItSelf = time * 30.0;
 				const earthOrbitRadius = 5.0; // Radius of the earth's orbit
 
 				const earthPositionX = Math.cos(earthRotationAroundSun) * earthOrbitRadius;
 				const earthPositionZ = Math.sin(earthRotationAroundSun) * earthOrbitRadius;
-				mat4.translate(earthModel, earthModel, [earthPositionX, 6.5, earthPositionZ]);
+				mat4.translate(earthModel, earthModel, [earthPositionX, modelPosition, earthPositionZ]);
+				mat4.scale(earthModel, earthModel, [earthScale, earthScale, earthScale]);
 				mat4.rotate(earthModel, earthModel, Math.radians(earthRotationItSelf), [0.0, 1.0, 0.0]);
+
+				// Moon model
+				const moonModel = mat4.create();
+				const moonScale = 0.3;
+				const moonRotationAroundEarth = time * 1.0;
+				const moonRotationItSelf = time * 35.0;
+				const moonOrbitRadius = 1.5; // Radius of the moon's orbit
+
+				const moonPositionX = Math.cos(moonRotationAroundEarth) * moonOrbitRadius + earthPositionX;
+				const moonPositionZ = Math.sin(moonRotationAroundEarth) * moonOrbitRadius + earthPositionZ;
+				mat4.translate(moonModel, moonModel, [moonPositionX, modelPosition, moonPositionZ]);
+				mat4.scale(moonModel, moonModel, [moonScale, moonScale, moonScale]);
+				mat4.rotate(moonModel, moonModel, Math.radians(moonRotationItSelf), [0.0, 1.0, 0.0]);
 
 				// Bind
 				shaderProgram.bind();
@@ -294,6 +314,9 @@
 
 				// Render the earth
 				renderModelTexture(proj, view, earthModel, earthTexture);
+
+				// Render the moon
+				renderModelTexture(proj, view, moonModel, moonTexture);
 
 				requestAnimationFrame(renderFunc);
 			}
