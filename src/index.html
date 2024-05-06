@@ -226,6 +226,27 @@
 				return texture;
 			}
 
+			function renderModelTexture(proj, view, model, texture) {
+				shaderProgram.setUniformMat4("model", model);
+
+				gl.activeTexture(gl.TEXTURE1);
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				shaderProgram.setUniform1i("uTexture", 1);
+
+				ubo.uploadData("projection", proj);
+				ubo.uploadData("view", view);
+				ubo.uploadAll();
+
+				gl.bindVertexArray(VAO);
+
+				gl.drawElements(
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
+				);
+			}
+
 			gl.clearColor(0.0, 0.0, 0.0, 1.0);
 			gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -235,7 +256,7 @@
 
 				time *= 0.001; // to seconds
 
-				var proj = mat4.create();
+				const proj = mat4.create();
 				mat4.perspective(
 					proj,
 					Math.radians(60.0),
@@ -243,70 +264,36 @@
 					0.001,
 					1000.0
 				);
-				var view = mat4.create();
+				const view = mat4.create();
 				mat4.lookAt(view, cameraPosition, vec3.add(vec3.create(), cameraPosition, cameraFront), cameraUp);
-            
-				//mat4.translate(view, view, [0.0, 0.0, -20.0]);
-
-				const sunRotationItSelf = time * 25.0;
+				// mat4.translate(view, view, [0.0, 0.0, -20.0]);
 
 				// Sun model
-				var sunModel = mat4.create();
+				const sunModel = mat4.create();
+				const sunRotationItSelf = time * 25.0;
+
 				mat4.translate(sunModel, sunModel, [0.0, 6.5, 0.0]);
 				mat4.rotate(sunModel, sunModel, Math.radians(sunRotationItSelf), [0.0, 1.0, 0.0]);
 
-				const earthRotationAroundSun = time * 0.5;
-				const earthRotationItSelf = time * 30.0;
-
 				// Earth model
 				const earthModel = mat4.create();
+				const earthRotationAroundSun = time * 0.5;
+				const earthRotationItSelf = time * 30.0;
 				const earthOrbitRadius = 5.0; // Radius of the earth's orbit
+
 				const earthPositionX = Math.cos(earthRotationAroundSun) * earthOrbitRadius;
 				const earthPositionZ = Math.sin(earthRotationAroundSun) * earthOrbitRadius;
 				mat4.translate(earthModel, earthModel, [earthPositionX, 6.5, earthPositionZ]);
 				mat4.rotate(earthModel, earthModel, Math.radians(earthRotationItSelf), [0.0, 1.0, 0.0]);
 
-				// Render the sun
+				// Bind
 				shaderProgram.bind();
-				shaderProgram.setUniformMat4("model", sunModel);
 
-				// Texture the sun
-				gl.activeTexture(gl.TEXTURE0);
-				gl.bindTexture(gl.TEXTURE_2D, sunTexture);
-				shaderProgram.setUniform1i("uTexture", 0);
-
-				ubo.uploadData("projection", proj);
-				ubo.uploadData("view", view);
-				ubo.uploadAll();
-
-				// Draw the sun
-				gl.bindVertexArray(VAO);
-				gl.drawElements(
-					gl.TRIANGLES,
-					sphereGeo.indices.length,
-					gl.UNSIGNED_INT,
-					0
-				);
+				// Render the sun
+				renderModelTexture(proj, view, sunModel, sunTexture);
 
 				// Render the earth
-				shaderProgram.setUniformMat4("model", earthModel);
-
-				// Texture the earth
-				gl.activeTexture(gl.TEXTURE1);
-				gl.bindTexture(gl.TEXTURE_2D, earthTexture);
-				shaderProgram.setUniform1i("uTexture", 1);
-
-				ubo.uploadData("projection", proj);
-				ubo.uploadData("view", view);
-				ubo.uploadAll();
-
-				// Draw the earth
-				gl.drawElements(
-					gl.TRIANGLES,
-					sphereGeo.indices.length,
-					gl.UNSIGNED_INT,
-					0
-				);
+				renderModelTexture(proj, view, earthModel, earthTexture);
 
 				requestAnimationFrame(renderFunc);
 			}
