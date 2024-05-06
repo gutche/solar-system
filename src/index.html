@@ -228,11 +228,11 @@
 
 				var proj = mat4.create();
 				mat4.perspective(
-						proj,
-						Math.radians(60.0),
-						gl.canvas.width / gl.canvas.height,
-						0.001,
-						1000.0
+					proj,
+					Math.radians(60.0),
+					gl.canvas.width / gl.canvas.height,
+					0.001,
+					1000.0
 				);
 				var view = mat4.create();
 				mat4.translate(view, view, [0.0, 0.0, -20.0]);
@@ -263,12 +263,13 @@
 				ubo.uploadData("view", view);
 				ubo.uploadAll();
 
+				// Draw the sun
 				gl.bindVertexArray(VAO);
 				gl.drawElements(
-						gl.TRIANGLES,
-						sphereGeo.indices.length,
-						gl.UNSIGNED_INT,
-						0
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
 				);
 
 				// Render the earth
@@ -283,11 +284,12 @@
 				ubo.uploadData("view", view);
 				ubo.uploadAll();
 
+				// Draw the earth
 				gl.drawElements(
-						gl.TRIANGLES,
-						sphereGeo.indices.length,
-						gl.UNSIGNED_INT,
-						0
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
 				);
 
 				requestAnimationFrame(renderFunc);
