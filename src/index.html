@@ -181,10 +181,12 @@
 				gl.STATIC_DRAW
 			);
 
+			let texture;
+
 			const textureImage = new Image();
 			textureImage.onload = function () {
 				console.log("Image has been loaded");
-				const texture = gl.createTexture();
+				texture = gl.createTexture();
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				gl.texImage2D(
 					gl.TEXTURE_2D,
@@ -238,13 +240,10 @@
 
 				shaderProgram.setUniformMat4("model", model);
 
-				// Idk why this kills it lol
-				/* gl.activeTexture(gl.TEXTURE0);
+				// I think this is how it works
+				gl.activeTexture(gl.TEXTURE0);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
-				gl.uniform1i(
-					gl.getUniformLocation(shaderProgram, "uTexture"),
-					0
-				); */
+				shaderProgram.setUniform1i("uTexture", 0);
 
 				// Aquí subimos los datos para la proyección y la vista
 				ubo.uploadData("projection", proj);
