@@ -227,16 +227,12 @@
 				return texture;
 			}
 
-			function renderModelTexture(proj, view, model, texture) {
+			function renderModelTexture(model, texture) {
 				shaderProgram.setUniformMat4("model", model);
 
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				shaderProgram.setUniform1i("uTexture", 1);
-
-				ubo.uploadData("projection", proj);
-				ubo.uploadData("view", view);
-				ubo.uploadAll();
 
 				gl.bindVertexArray(VAO);
 
@@ -308,15 +304,18 @@
 
 				// Bind
 				shaderProgram.bind();
+				ubo.uploadData("projection", proj);
+				ubo.uploadData("view", view);
+				ubo.uploadAll();
 
 				// Render the sun
-				renderModelTexture(proj, view, sunModel, sunTexture);
+				renderModelTexture(sunModel, sunTexture);
 
 				// Render the earth
-				renderModelTexture(proj, view, earthModel, earthTexture);
+				renderModelTexture(earthModel, earthTexture);
 
 				// Render the moon
-				renderModelTexture(proj, view, moonModel, moonTexture);
+				renderModelTexture(moonModel, moonTexture);
 
 				requestAnimationFrame(renderFunc);
 			}
