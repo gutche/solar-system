@@ -190,7 +190,7 @@
 			earthProgram.autocatching();
 
 			// variables to control translation and rotation
-			var cameraPosition = vec3.fromValues(0.0, 0.0, -20.0); //Camera pointing at origin
+			var cameraPosition = vec3.fromValues(0.0, -12.0, -40.0); //Camera pointing at origin
 			var cameraFront = vec3.fromValues(0.0, 0.0, 1.0);
 			var cameraUp = [0, 1, 0];
 
@@ -388,10 +388,10 @@
 				// Sun model
 				const sunModel = mat4.create();
 				const sunScale = 2.0;
-				const sunPosition = 6.5;
+				const sunPosition = [0.0, 0.0, 0.0];
 				const sunRotationPeriod = time * 20.0;
 
-				mat4.translate(sunModel, sunModel, [0.0, sunPosition, 0.0]);
+				mat4.translate(sunModel, sunModel, sunPosition);
 				mat4.scale(sunModel, sunModel, [sunScale, sunScale, sunScale]);
 				mat4.rotate(
 					sunModel,
@@ -413,7 +413,7 @@
 					Math.sin(earthOrbitalPeriod) * earthOrbitRadius;
 				mat4.translate(earthModel, earthModel, [
 					earthPositionX,
-					sunPosition,
+					sunPosition[1],
 					earthPositionZ,
 				]);
 				mat4.scale(earthModel, earthModel, [
@@ -443,7 +443,7 @@
 					earthPositionZ;
 				mat4.translate(moonModel, moonModel, [
 					moonPositionX,
-					sunPosition,
+					sunPosition[1],
 					moonPositionZ,
 				]);
 				mat4.scale(moonModel, moonModel, [
