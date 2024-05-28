@@ -105,7 +105,7 @@
 			
 			void main() {
 				TexCoord = aTexCoord;
-				FragPos = vec3(model * vec4(aPos, 1.0));
+				FragPos = vec3(model * vec4(aPos, 0.0));
 				Normal = mat3(transpose(inverse(model))) * aNormal;  
 				gl_Position = projection * view * model * vec4(aPos, 1.0);
 			}
@@ -190,9 +190,9 @@
 			earthProgram.autocatching();
 
 			// variables to control translation and rotation
-			var cameraPosition = vec3.fromValues(0.0, -12.0, -40.0); //Camera pointing at origin
-			var cameraFront = vec3.fromValues(0.0, 0.0, 1.0);
-			var cameraUp = [0, 1, 0];
+			var cameraPosition = vec3.fromValues(0.0, 0.0, -40.0); //Camera pointing at origin
+			var cameraFront = vec3.fromValues(0.0, -6.0, 20.0);
+			var cameraUp = vec3.fromValues(0.0, 1.0, 0.0);
 
 			let lastX = 250;
 			let lastY = 250;
@@ -322,9 +322,8 @@
 				earthProgram.setUniformMat4("model", model);
 				earthProgram.setUniform3f("lightPos", 0.0, 0.0, 0.0);
 				earthProgram.setUniform3f("viewPos", cameraPosition);
-				earthProgram.setUniform3f("lightColor", 1.0,1.0,1.0);
+				earthProgram.setUniform3f("lightColor", 1.0, 1.0, 1.0);
 
-				
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, earthTexture);
 				earthProgram.setUniform1i("uTexture", 1);
@@ -408,21 +407,30 @@
 				const earthModel = mat4.create();
 				const earthScale = 1.0;
 				const earthOrbitalPeriod = time * 0.5;
-				const earthRotationPeriod = time * 30.0;
+				const earthRotationPeriod = time * 100.0;
 				const earthOrbitalAngle = time * 0.5; // Radius of the earth's orbit
-				const earthOrbitRadius =  5.0; 
+				const earthOrbitRadius = 5.0;
 
-				 // Initial Earth position in the xz-plane
-				 const earthInitialPosition = [earthOrbitRadius, 0.0, 0.0];
-    
+				// Initial Earth position in the xz-plane
+				const earthInitialPosition = [earthOrbitRadius, 0.0, 0.0];
+
 				// Create a rotation matrix for the Earth's orbit around the Sun
 				const earthOrbitRotation = mat4.create();
-				mat4.rotate(earthOrbitRotation, earthOrbitRotation, earthOrbitalAngle, [0.0, 1.0, 0.0]);
-				
+				mat4.rotate(
+					earthOrbitRotation,
+					earthOrbitRotation,
+					earthOrbitalAngle,
+					[0.0, 1.0, 0.0]
+				);
+
 				// Apply the rotation matrix to the Earth's initial position
-				const earthPosition = vec3.transformMat4(vec3.create(), earthInitialPosition, earthOrbitRotation);
-				
-				mat4.translate(earthModel, earthModel,earthPosition);
+				const earthPosition = vec3.transformMat4(
+					vec3.create(),
+					earthInitialPosition,
+					earthOrbitRotation
+				);
+
+				mat4.translate(earthModel, earthModel, earthPosition);
 				mat4.scale(earthModel, earthModel, [
 					earthScale,
 					earthScale,
@@ -436,24 +444,37 @@
 				);
 
 				// Moon model
-				
+
 				const moonModel = mat4.create();
 				const moonScale = 0.3;
 				const moonOrbitalPeriod = time * 1.0;
 				const moonRotationPeriod = time * 35.0;
 				const moonOrbitRadius = 1.5; // Radius of the moon's orbit
-				
+
 				const moonInitialPosition = [moonOrbitRadius, 0.0, 0.0];
-				
+
 				const moonOrbitRotation = mat4.create();
-    			mat4.rotate(moonOrbitRotation, moonOrbitRotation, moonOrbitalPeriod, [0.0, 1.0, 0.0]);
-    
-				 // Apply the rotation matrix to the Moon's initial position relative to the Earth
-				 const moonPositionRelativeToEarth = vec3.transformMat4(vec3.create(), moonInitialPosition, moonOrbitRotation);
-    
+				mat4.rotate(
+					moonOrbitRotation,
+					moonOrbitRotation,
+					moonOrbitalPeriod,
+					[0.0, 1.0, 0.0]
+				);
+
+				// Apply the rotation matrix to the Moon's initial position relative to the Earth
+				const moonPositionRelativeToEarth = vec3.transformMat4(
+					vec3.create(),
+					moonInitialPosition,
+					moonOrbitRotation
+				);
+
 				// Calculate the Moon's position in the world coordinates
-				const moonPosition = vec3.add(vec3.create(), moonPositionRelativeToEarth, earthPosition);
-    
+				const moonPosition = vec3.add(
+					vec3.create(),
+					moonPositionRelativeToEarth,
+					earthPosition
+				);
+
 				mat4.translate(moonModel, moonModel, moonPosition);
 				mat4.scale(moonModel, moonModel, [
 					moonScale,
