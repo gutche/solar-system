@@ -407,17 +407,20 @@
 				const earthScale = 1.0;
 				const earthOrbitalPeriod = time * 0.5;
 				const earthRotationPeriod = time * 30.0;
-				const earthOrbitRadius = 5.0; // Radius of the earth's orbit
+				const earthOrbitalAngle = time * 0.5; // Radius of the earth's orbit
+				const earthOrbitRadius =  5.0; 
 
-				const earthPositionX =
-					Math.cos(earthOrbitalPeriod) * earthOrbitRadius;
-				const earthPositionZ =
-					Math.sin(earthOrbitalPeriod) * earthOrbitRadius;
-				mat4.translate(earthModel, earthModel, [
-					earthPositionX,
-					sunPosition[1],
-					earthPositionZ,
-				]);
+				 // Initial Earth position in the xz-plane
+				 const earthInitialPosition = [earthOrbitRadius, 0.0, 0.0];
+    
+				// Create a rotation matrix for the Earth's orbit around the Sun
+				const earthOrbitRotation = mat4.create();
+				mat4.rotate(earthOrbitRotation, earthOrbitRotation, earthOrbitalAngle, [0.0, 1.0, 0.0]);
+				
+				// Apply the rotation matrix to the Earth's initial position
+				const earthPosition = vec3.transformMat4(vec3.create(), earthInitialPosition, earthOrbitRotation);
+				
+				mat4.translate(earthModel, earthModel,earthPosition);
 				mat4.scale(earthModel, earthModel, [
 					earthScale,
 					earthScale,
@@ -426,28 +429,30 @@
 				mat4.rotate(
 					earthModel,
 					earthModel,
-					Math.radians(earthOrbitRadius),
+					Math.radians(earthRotationPeriod),
 					[0.0, 1.0, 0.0]
 				);
 
 				// Moon model
+				
 				const moonModel = mat4.create();
 				const moonScale = 0.3;
 				const moonOrbitalPeriod = time * 1.0;
 				const moonRotationPeriod = time * 35.0;
 				const moonOrbitRadius = 1.5; // Radius of the moon's orbit
-
-				const moonPositionX =
-					Math.cos(moonOrbitalPeriod) * moonOrbitRadius +
-					earthPositionX;
-				const moonPositionZ =
-					Math.sin(moonOrbitalPeriod) * moonOrbitRadius +
-					earthPositionZ;
-				mat4.translate(moonModel, moonModel, [
-					moonPositionX,
-					sunPosition[1],
-					moonPositionZ,
-				]);
+				
+				const moonInitialPosition = [moonOrbitRadius, 0.0, 0.0];
+				
+				const moonOrbitRotation = mat4.create();
+    			mat4.rotate(moonOrbitRotation, moonOrbitRotation, moonOrbitalPeriod, [0.0, 1.0, 0.0]);
+    
+				 // Apply the rotation matrix to the Moon's initial position relative to the Earth
+				 const moonPositionRelativeToEarth = vec3.transformMat4(vec3.create(), moonInitialPosition, moonOrbitRotation);
+    
+				// Calculate the Moon's position in the world coordinates
+				const moonPosition = vec3.add(vec3.create(), moonPositionRelativeToEarth, earthPosition);
+    
+				mat4.translate(moonModel, moonModel, moonPosition);
 				mat4.scale(moonModel, moonModel, [
 					moonScale,
 					moonScale,
