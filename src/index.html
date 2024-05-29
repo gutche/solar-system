@@ -400,6 +400,35 @@
 				);
 			}
 
+			function assignAttributes(pModel, pScale, pRotationPeriod, pOrbitalPeriod, pOrbitalRadius, pInitialPosition, pOrbitRotation, pPosition ){
+				mat4.rotate(
+					pOrbitRotation,
+					pOrbitRotation,
+					pOrbitalPeriod,
+					[0.0, 1.0, 0.0]
+				);
+
+				// Apply the rotation matrix to the mercury's initial position
+				vec3.transformMat4(
+					pPosition,
+					pInitialPosition,
+					pOrbitRotation
+				);
+
+				mat4.translate(pModel, pModel, pPosition);
+				mat4.scale(pModel, pModel, [
+					pScale,
+					pScale,
+					pScale,
+				]);
+				mat4.rotate(
+					pModel,
+					pModel,
+					Math.radians(pRotationPeriod),
+					[0.0, 1.0, 0.0]
+				);
+
+			}
 			gl.clearColor(0.0, 0.0, 0.0, 1.0);
 			gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -445,7 +474,7 @@
 				const earthModel = mat4.create();
 				const earthScale = 1.0;
 				const earthRotationPeriod = time * 60.0;
-				const earthOrbitalAngle = time * 0.5; // Radius of the earth's orbit
+				const earthOrbitalPeriod = time * 0.5; // Radius of the earth's orbit
 				const earthOrbitRadius = 9.0;
 
 				// Initial Earth position in the xz-plane
@@ -453,32 +482,11 @@
 
 				// Create a rotation matrix for the Earth's orbit around the Sun
 				const earthOrbitRotation = mat4.create();
-				mat4.rotate(
-					earthOrbitRotation,
-					earthOrbitRotation,
-					earthOrbitalAngle,
-					[0.0, 1.0, 0.0]
-				);
-
-				// Apply the rotation matrix to the Earth's initial position
-				const earthPosition = vec3.transformMat4(
-					vec3.create(),
-					earthInitialPosition,
-					earthOrbitRotation
-				);
-
-				mat4.translate(earthModel, earthModel, earthPosition);
-				mat4.scale(earthModel, earthModel, [
-					earthScale,
-					earthScale,
-					earthScale,
-				]);
-				mat4.rotate(
-					earthModel,
-					earthModel,
-					Math.radians(earthRotationPeriod),
-					[0.0, 1.0, 0.0]
-				);
+				const earthPosition = vec3.create();
+				assignAttributes(earthModel, earthScale, earthRotationPeriod, 
+					earthOrbitalPeriod, earthOrbitRadius, earthInitialPosition, 
+					earthOrbitRotation,earthPosition)
+				
 
 				// Moon model
 
@@ -529,7 +537,7 @@
 				const mercuryModel = mat4.create();
 				const mercuryScale = 0.5;
 				const mercuryRotationPeriod = time * 60.0;
-				const mercuryOrbitalAngle = time * 3.0; // Radius of the mercury's orbit
+				const mercuryOrbitalPeriod = time * 3.0; // Radius of the mercury's orbit
 				const mercuryOrbitRadius = 3.87;
 
 				// Initial mercury position in the xz-plane
@@ -537,32 +545,11 @@
 
 				// Create a rotation matrix for the mercury's orbit around the Sun
 				const mercuryOrbitRotation = mat4.create();
-				mat4.rotate(
-					mercuryOrbitRotation,
-					mercuryOrbitRotation,
-					mercuryOrbitalAngle,
-					[0.0, 1.0, 0.0]
-				);
+				const mercuryPosition = vec3.create();
+				assignAttributes(mercuryModel, mercuryScale, mercuryRotationPeriod, 
+					mercuryOrbitalPeriod, mercuryOrbitRadius, mercuryInitialPosition, 
+					mercuryOrbitRotation,mercuryPosition)
 
-				// Apply the rotation matrix to the mercury's initial position
-				const mercuryPosition = vec3.transformMat4(
-					vec3.create(),
-					mercuryInitialPosition,
-					mercuryOrbitRotation
-				);
-
-				mat4.translate(mercuryModel, mercuryModel, mercuryPosition);
-				mat4.scale(mercuryModel, mercuryModel, [
-					mercuryScale,
-					mercuryScale,
-					mercuryScale,
-				]);
-				mat4.rotate(
-					mercuryModel,
-					mercuryModel,
-					Math.radians(mercuryRotationPeriod),
-					[0.0, 1.0, 0.0]
-				);
 
 
 				// Bind
