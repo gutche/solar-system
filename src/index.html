@@ -171,6 +171,47 @@
 				FragColor = vec4(result, 1.0);
 			}
 		</script>
+		<!-- prettier-ignore -->
+		<script id="atmosphere-vs" type="x-shader/x-vertex">#version 300 es
+			precision mediump float;
+
+			layout (location = 0) in vec3 aPos;
+			layout (location = 2) in vec2 aTexCoord;
+
+			// Uniform Buffer Object
+			uniform UBO {
+				mat4 projection;
+				mat4 view;
+			};
+
+			uniform mat4 model;
+
+			out vec2 TexCoord;
+
+			void main() {
+				TexCoord = aTexCoord;
+				gl_Position = projection * view * model * vec4(aPos, 1.0);
+			}
+		</script>
+
+		<!-- prettier-ignore -->
+		<script id="atmosphere-fs" type="x-shader/x-fragment">#version 300 es
+			precision mediump float;
+
+			in vec2 TexCoord;
+
+			uniform sampler2D uCloudsTexture;
+
+			out vec4 FragColor;
+
+			void main() {
+				vec4 color = texture(uCloudsTexture, TexCoord);
+				if (color.a < 0.6) {
+					discard;
+				}
+				FragColor = color;
+			}
+		</script>
 	</head>
 	<body>
 		<canvas
@@ -216,6 +257,17 @@
 			earthProgram.link();
 			earthProgram.autocatching();
 
+			const atmosphereProgram = new ShaderProgram();
+			atmosphereProgram.createVertexShader(
+				document.getElementById("atmosphere-vs").text
+			);
+			atmosphereProgram.createFragmentShader(
+				document.getElementById("atmosphere-fs").text
+			);
+			atmosphereProgram.compile();
+			atmosphereProgram.link();
+			atmosphereProgram.autocatching();
+
 			// variables to control translation and rotation
 			var cameraPosition = vec3.fromValues(0.0, 0.0, -40.0); //Camera pointing at origin
 			var cameraFront = vec3.fromValues(0.0, -6.0, 20.0);
@@ -239,7 +291,7 @@
 			ubo.attachProgram(sphereProgram);
 			ubo.attachProgram(earthProgram);
 			ubo.attachProgram(moonProgram);
-
+			ubo.attachProgram(atmosphereProgram);
 
 			// ---------------------------------------------------
 			// CREA EL VAO, VBO'S Y EBO PARA LA ESFERA (createSphere())
@@ -311,6 +363,9 @@
 			const earthSpecularTexture = loadTexture(
 				"../resources/earth_specular.jpg"
 			);
+			const earthCloudsTexture = loadTexture(
+				"../resources/earth_clouds.png"
+			);
 			const moonTexture = loadTexture("../resources/moon.png");
 
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -346,7 +401,13 @@
 				return texture;
 			}
 
-			const renderPlanet = (model, shaderProgramP, texture, normalTexture, specularTexture) => {
+			const renderPlanet = (
+				model,
+				shaderProgramP,
+				texture,
+				normalTexture,
+				specularTexture
+			) => {
 				shaderProgramP.bind();
 				shaderProgramP.setUniformMat4("model", model);
 				shaderProgramP.setUniform3f("lightPos", 0.0, 0.0, 0.0);
@@ -354,8 +415,8 @@
 				shaderProgramP.setUniform3f("lightColor", 1.0, 1.0, 1.0);
 
 				shaderProgramP.setUniform1f("lightConstant", 1.0);
-                shaderProgramP.setUniform1f("lightLinear", 0.09);
-                shaderProgramP.setUniform1f("lightQuadratic", 0.032);
+				shaderProgramP.setUniform1f("lightLinear", 0.09);
+				shaderProgramP.setUniform1f("lightQuadratic", 0.032);
 
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -393,6 +454,28 @@
 					gl.UNSIGNED_INT,
 					0
 				);
+			}
+
+			function renderAtmosphere(model, texture, shaderProgram) {
+				gl.enable(gl.BLEND);
+				gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+				shaderProgram.bind();
+				shaderProgram.setUniformMat4("model", model);
+
+				gl.activeTexture(gl.TEXTURE1);
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				shaderProgram.setUniform1i("uCloudsTexture", 1);
+
+				gl.bindVertexArray(VAO);
+				gl.drawElements(
+					gl.TRIANGLES,
+					sphereGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
+				);
+
+				gl.disable(gl.BLEND);
 			}
 
 			gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -530,10 +613,43 @@
 				// Render the sun
 				renderSun(sunModel, sunTexture, sphereProgram);
 
-				renderPlanet(earthModel,earthProgram, earthTexture, earthNormalTexture, earthSpecularTexture);
+				renderPlanet(
+					earthModel,
+					earthProgram,
+					earthTexture,
+					earthNormalTexture,
+					earthSpecularTexture
+				);
 
 				// Render the moon
-				renderPlanet(moonModel, moonProgram, moonTexture,moonTexture, moonTexture);
+				renderPlanet(
+					moonModel,
+					moonProgram,
+					moonTexture,
+					moonTexture,
+					moonTexture
+				);
+
+				// Render the atmosphere
+				const atmosphereModel = mat4.create();
+				mat4.translate(atmosphereModel, atmosphereModel, earthPosition);
+				mat4.scale(atmosphereModel, atmosphereModel, [
+					earthScale * 1.01,
+					earthScale * 1.01,
+					earthScale * 1.01,
+				]);
+				mat4.rotate(
+					atmosphereModel,
+					atmosphereModel,
+					Math.radians(earthRotationPeriod * 1.1),
+					[0.0, 1.0, 0.0]
+				); // Slightly faster rotation
+
+				renderAtmosphere(
+					atmosphereModel,
+					earthCloudsTexture,
+					atmosphereProgram
+				);
 
 				requestAnimationFrame(renderFunc);
 			}
