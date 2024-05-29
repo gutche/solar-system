@@ -183,6 +183,18 @@
 			// ---------------------------------------------------
 			// CREAR TODOS LOS PROGRAMAS QUE NECESITES
 			// ---------------------------------------------------
+			function loadPlanetProgram(shaderProgram){
+				shaderProgram.createVertexShader(
+				document.getElementById("planets-vs").text
+				);
+				shaderProgram.createFragmentShader(
+					document.getElementById("planets-fs").text
+				);
+				shaderProgram.compile();
+				shaderProgram.link();
+				shaderProgram.autocatching();
+			}
+
 			const sphereProgram = new ShaderProgram();
 			sphereProgram.createVertexShader(
 				document.getElementById("sun-vs").text
@@ -195,26 +207,14 @@
 			sphereProgram.autocatching();
 
 			const moonProgram = new ShaderProgram();
-			moonProgram.createVertexShader(
-				document.getElementById("planets-vs").text
-			);
-			moonProgram.createFragmentShader(
-				document.getElementById("planets-fs").text
-			);
-			moonProgram.compile();
-			moonProgram.link();
-			moonProgram.autocatching();
+			loadPlanetProgram(moonProgram);
 
 			const earthProgram = new ShaderProgram();
-			earthProgram.createVertexShader(
-				document.getElementById("planets-vs").text
-			);
-			earthProgram.createFragmentShader(
-				document.getElementById("planets-fs").text
-			);
-			earthProgram.compile();
-			earthProgram.link();
-			earthProgram.autocatching();
+			loadPlanetProgram(earthProgram);
+
+			const mercuryProgram = new ShaderProgram();
+			loadPlanetProgram(mercuryProgram);
+			
 
 			// variables to control translation and rotation
 			var cameraPosition = vec3.fromValues(0.0, 0.0, -40.0); //Camera pointing at origin
@@ -239,6 +239,8 @@
 			ubo.attachProgram(sphereProgram);
 			ubo.attachProgram(earthProgram);
 			ubo.attachProgram(moonProgram);
+			ubo.attachProgram(mercuryProgram);
+
 
 
 			// ---------------------------------------------------
@@ -310,6 +312,9 @@
 			);
 			const earthSpecularTexture = loadTexture(
 				"../resources/earth_specular.jpg"
+			);
+			const mercuryTexture = loadTexture(
+				"../resources/mercury_diffuse.jpg"
 			);
 			const moonTexture = loadTexture("../resources/moon.png");
 
@@ -439,10 +444,9 @@
 				// Earth model
 				const earthModel = mat4.create();
 				const earthScale = 1.0;
-				const earthOrbitalPeriod = time * 0.5;
 				const earthRotationPeriod = time * 60.0;
 				const earthOrbitalAngle = time * 0.5; // Radius of the earth's orbit
-				const earthOrbitRadius = 5.0;
+				const earthOrbitRadius = 9.0;
 
 				// Initial Earth position in the xz-plane
 				const earthInitialPosition = [earthOrbitRadius, 0.0, 0.0];
@@ -521,6 +525,46 @@
 					[0.0, 1.0, 0.0]
 				);
 
+				//Mercury model
+				const mercuryModel = mat4.create();
+				const mercuryScale = 0.5;
+				const mercuryRotationPeriod = time * 60.0;
+				const mercuryOrbitalAngle = time * 3.0; // Radius of the mercury's orbit
+				const mercuryOrbitRadius = 3.87;
+
+				// Initial mercury position in the xz-plane
+				const mercuryInitialPosition = [mercuryOrbitRadius, 0.0, 0.0];
+
+				// Create a rotation matrix for the mercury's orbit around the Sun
+				const mercuryOrbitRotation = mat4.create();
+				mat4.rotate(
+					mercuryOrbitRotation,
+					mercuryOrbitRotation,
+					mercuryOrbitalAngle,
+					[0.0, 1.0, 0.0]
+				);
+
+				// Apply the rotation matrix to the mercury's initial position
+				const mercuryPosition = vec3.transformMat4(
+					vec3.create(),
+					mercuryInitialPosition,
+					mercuryOrbitRotation
+				);
+
+				mat4.translate(mercuryModel, mercuryModel, mercuryPosition);
+				mat4.scale(mercuryModel, mercuryModel, [
+					mercuryScale,
+					mercuryScale,
+					mercuryScale,
+				]);
+				mat4.rotate(
+					mercuryModel,
+					mercuryModel,
+					Math.radians(mercuryRotationPeriod),
+					[0.0, 1.0, 0.0]
+				);
+
+
 				// Bind
 				ubo.bind();
 				ubo.uploadData("projection", proj);
@@ -535,6 +579,10 @@
 				// Render the moon
 				renderPlanet(moonModel, moonProgram, moonTexture,moonTexture, moonTexture);
 
+				//Render Mercury
+				renderPlanet(mercuryModel, mercuryProgram, mercuryTexture, mercuryTexture, mercuryTexture);
+
+
 				requestAnimationFrame(renderFunc);
 			}
 
@@ -544,20 +592,7 @@
 				false
 			);
 			document.addEventListener("keydown", function (event) {
-				/*
-					65 => A
-					68 => D
-					83 => S
-					87 => W
-					81 => Q
-					69 => E
-
-					37 => Flecha izq
-					39 => Fecha drcha
-					38 => Fecha arriba
-					40 => Fecha abajo
-
-				*/
+		
 				var cameraSpeed = 0.4; // Speed
 				const cameraFrontNormalized = vec3.normalize(
 					vec3.create(),
