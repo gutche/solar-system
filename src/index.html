@@ -217,6 +217,12 @@
 
 			const venusProgram = new ShaderProgram();
 			loadPlanetProgram(venusProgram);
+
+			const marsProgram = new ShaderProgram();
+			loadPlanetProgram(marsProgram);
+
+			const jupiterProgram = new ShaderProgram();
+			loadPlanetProgram(jupiterProgram);
 			
 
 			// variables to control translation and rotation
@@ -244,6 +250,9 @@
 			ubo.attachProgram(moonProgram);
 			ubo.attachProgram(mercuryProgram);
 			ubo.attachProgram(venusProgram);
+			ubo.attachProgram(marsProgram);
+			ubo.attachProgram(jupiterProgram);
+
 
 
 			// ---------------------------------------------------
@@ -322,6 +331,12 @@
 			const moonTexture = loadTexture("../resources/moon.png");
 
 			const venusTexture = loadTexture("../resources/venus_diffuse.jpg");
+
+			const marsTexture = loadTexture("../resources/mars_diffuse.jpg");
+
+			const jupiterTexture = loadTexture("../resources/jupiter_diffuse.jpg");
+
+
 
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -479,8 +494,8 @@
 				const earthModel = mat4.create();
 				const earthScale = 1.0;
 				const earthRotationPeriod = time * 60.0;
-				const earthOrbitalPeriod = time * 0.5; // Radius of the earth's orbit
-				const earthOrbitRadius = 9.0;
+				const earthOrbitalPeriod = time * 1.4; // Radius of the earth's orbit
+				const earthOrbitRadius = 10.0;
 
 				// Initial Earth position in the xz-plane
 				const earthInitialPosition = [earthOrbitRadius, 0.0, 0.0];
@@ -572,6 +587,40 @@
 				assignAttributes(venusModel, venusScale, venusRotationPeriod, 
 					venusOrbitalPeriod, venusOrbitRadius, venusInitialPosition, 
 					venusOrbitRotation,venusPosition)
+				
+				//mars model
+				const marsModel = mat4.create();
+				const marsScale = 1.2;
+				const marsRotationPeriod = time * 60.0;
+				const marsOrbitalPeriod = time * 1.2; // Radius of the mars's orbit
+				const marsOrbitRadius = 14.0;
+
+				// Initial mars position in the xz-plane
+				const marsInitialPosition = [marsOrbitRadius, 0.0, 0.0];
+
+				// Create a rotation matrix for the mars's orbit around the Sun
+				const marsOrbitRotation = mat4.create();
+				const marsPosition = vec3.create();
+				assignAttributes(marsModel, marsScale, marsRotationPeriod, 
+					marsOrbitalPeriod, marsOrbitRadius, marsInitialPosition, 
+					marsOrbitRotation,marsPosition)
+
+				//mars jupiter
+				const jupiterModel = mat4.create();
+				const jupiterScale = 2;
+				const jupiterRotationPeriod = time * 60.0;
+				const jupiterOrbitalPeriod = time * 1; // Radius of the mars's orbit
+				const jupiterOrbitRadius = 18.7;
+
+				// Initial mars position in the xz-plane
+				const jupiterInitialPosition = [jupiterOrbitRadius, 0.0, 0.0];
+
+				// Create a rotation matrix for the jupiter's orbit around the Sun
+				const jupiterOrbitRotation = mat4.create();
+				const jupiterPosition = vec3.create();
+				assignAttributes(jupiterModel, jupiterScale, jupiterRotationPeriod, 
+					jupiterOrbitalPeriod, jupiterOrbitRadius, jupiterInitialPosition, 
+					jupiterOrbitRotation,jupiterPosition)
 
 
 				// Bind
@@ -593,6 +642,13 @@
 
 				//Render Venus
 				renderPlanet(venusModel, venusProgram, venusTexture, venusTexture, venusTexture);
+
+				//Render mars
+				renderPlanet(marsModel, marsProgram, marsTexture, marsTexture, marsTexture);
+
+				//Render jupiter
+				renderPlanet(jupiterModel, jupiterProgram, jupiterTexture, jupiterTexture, jupiterTexture);
+
 
 
 
