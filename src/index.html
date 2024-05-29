@@ -144,7 +144,7 @@
 				
 			
 				// Lighting calculations
-				vec3 ambient = 0.05 * lightColor;
+				vec3 ambient = 0.1 * lightColor;
 			
 				vec3 lightDir = normalize(lightPos - FragPos);
 				float diff = max(dot(normal, lightDir), 0.0);
@@ -356,7 +356,7 @@
 				shaderProgramP.setUniformMat4("model", model);
 				shaderProgramP.setUniform3f("lightPos", 0.0, 0.0, 0.0);
 				shaderProgramP.setUniform3f("viewPos", cameraPosition);
-				shaderProgramP.setUniform3f("lightColor", 1.0, 1.0, 1.0);
+				shaderProgramP.setUniform3f("lightColor", 2, 2, 2);
 
 				shaderProgramP.setUniform1f("lightConstant", 1.0);
                 shaderProgramP.setUniform1f("lightLinear", 0.09);
