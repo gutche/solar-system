@@ -545,6 +545,14 @@
 				shaderProgram.bind();
 				shaderProgram.setUniformMat4("model", model);
 
+				shaderProgram.setUniform3f("lightPos", 0.0, 0.0, 0.0);
+				shaderProgram.setUniform3f("viewPos", cameraPosition);
+				shaderProgram.setUniform3f("lightColor", 2, 2, 2);
+
+				shaderProgram.setUniform1f("lightConstant", 1.0);
+				shaderProgram.setUniform1f("lightLinear", 0.09);
+				shaderProgram.setUniform1f("lightQuadratic", 0.032);
+
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				shaderProgram.setUniform1i("uTexture", 1);
