@@ -165,7 +165,7 @@
 				vec3 result = (ambient + diffuse + specular) * color * attenuation;
 				// Only illuminate the side facing the light
 				if(diff <= 0.0) {
-					result = ambient * color; // Apply only ambient light on the shadowed side
+					result = (ambient) * specular; // Apply only ambient light on the shadowed side
     			}
 
 				FragColor = vec4(result, 1.0);
