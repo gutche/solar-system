@@ -110,9 +110,9 @@ function createSphere( )
 
 function createRing( )
 {
-	const innerRadius = 12;
-	const outerRadius = 12;
-	const thetaSegments = 30;
+	const innerRadius = 1.8;
+	const outerRadius = 1;
+	const thetaSegments = 40;
 	const phiSegments = 13;
 	const thetaStart = 0;
 	const thetaLength = 2.0 * Math.PI;

@@ -230,10 +230,10 @@
 
 			const saturnRingProgram = new ShaderProgram();
 			saturnRingProgram.createVertexShader(
-				document.getElementById("sun-vs").text
+				document.getElementById("planets-vs").text
 			);
 			saturnRingProgram.createFragmentShader(
-				document.getElementById("sun-fs").text
+				document.getElementById("planets-fs").text
 			);
 
 			saturnRingProgram.compile();
@@ -548,6 +548,7 @@
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				shaderProgram.setUniform1i("uTexture", 1);
+
 				gl.bindVertexArray(ringVAO);
 				gl.drawElements(
 					gl.TRIANGLES,
@@ -788,6 +789,7 @@
 
 				// saturn ring model
 				const ringModel = mat4.create();
+				mat4.translate(ringModel, ringModel, saturnPosition);
 				mat4.rotate(
 					ringModel,
 					ringModel,
@@ -797,11 +799,11 @@
 				mat4.rotate(
 					ringModel,
 					ringModel,
-					saturnRotationPeriod,
+					saturnRotationPeriod / 20,
 					[0.0, 1.0, 0.0]
 				);
+				mat4.rotate(ringModel, ringModel, Math.PI / 2, [1.0, 0.0, 0.0]);
 				mat4.scale(ringModel, ringModel, [2, 2, 2]);
-				mat4.translate(ringModel, ringModel, saturnPosition);
 
 				// uranus model
 				const uranusModel = mat4.create();
