@@ -144,7 +144,7 @@
 				
 			
 				// Lighting calculations
-				vec3 ambient = 0.1 * lightColor;
+				vec3 ambient = 0.6 * lightColor;
 			
 				vec3 lightDir = normalize(lightPos - FragPos);
 				float diff = max(dot(normal, lightDir), 0.0);
@@ -154,7 +154,7 @@
 				float specularStrength = texture(uSpecularTexture, TexCoord).r;
 				vec3 viewDir = normalize(viewPos - FragPos);
 				vec3 reflectDir = reflect(-lightDir, normal);
-				float spec = pow(max(dot(viewDir, reflectDir), 1.0), 32.0);
+				float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
 				vec3 specular = specularStrength * spec * lightColor;
 
 				// Attenuation
@@ -183,9 +183,9 @@
 			// ---------------------------------------------------
 			// CREAR TODOS LOS PROGRAMAS QUE NECESITES
 			// ---------------------------------------------------
-			function loadPlanetProgram(shaderProgram){
+			function loadPlanetProgram(shaderProgram) {
 				shaderProgram.createVertexShader(
-				document.getElementById("planets-vs").text
+					document.getElementById("planets-vs").text
 				);
 				shaderProgram.createFragmentShader(
 					document.getElementById("planets-fs").text
@@ -240,8 +240,6 @@
 			const saturnProgram = new ShaderProgram();
 			loadPlanetProgram(saturnProgram);
 
-			
-
 			// variables to control translation and rotation
 			var cameraPosition = vec3.fromValues(0.0, 0.0, -40.0); //Camera pointing at origin
 			var cameraFront = vec3.fromValues(0.0, -6.0, 20.0);
@@ -271,8 +269,6 @@
 			ubo.attachProgram(jupiterProgram);
 			ubo.attachProgram(saturnProgram);
 			ubo.attachProgram(saturnRingProgram);
-
-
 
 			// ---------------------------------------------------
 			// CREA EL VAO, VBO'S Y EBO PARA LA ESFERA (createSphere())
@@ -346,25 +342,40 @@
 
 			// position attribute
 			gl.bindBuffer(gl.ARRAY_BUFFER, ringVBO);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ringGeo.vertices), gl.STATIC_DRAW);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(ringGeo.vertices),
+				gl.STATIC_DRAW
+			);
 			gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(0);
 
 			// normal attribute
 			gl.bindBuffer(gl.ARRAY_BUFFER, ringVBO2);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ringGeo.normals), gl.STATIC_DRAW);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(ringGeo.normals),
+				gl.STATIC_DRAW
+			);
 			gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(1);
 
 			// texCoord attribute
 			gl.bindBuffer(gl.ARRAY_BUFFER, ringVBO3);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ringGeo.texCoords), gl.STATIC_DRAW);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(ringGeo.texCoords),
+				gl.STATIC_DRAW
+			);
 			gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(2);
 
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ringEBO);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(ringGeo.indices), gl.STATIC_DRAW);
-
+			gl.bufferData(
+				gl.ELEMENT_ARRAY_BUFFER,
+				new Uint32Array(ringGeo.indices),
+				gl.STATIC_DRAW
+			);
 
 			const sunTexture = loadTexture("../resources/sun.png");
 			const earthTexture = loadTexture("../resources/earth_diffuse.jpg");
@@ -383,12 +394,17 @@
 
 			const marsTexture = loadTexture("../resources/mars_diffuse.jpg");
 
-			const jupiterTexture = loadTexture("../resources/jupiter_diffuse.jpg");
+			const jupiterTexture = loadTexture(
+				"../resources/jupiter_diffuse.jpg"
+			);
 
-			const saturnTexture = loadTexture("../resources/saturn_diffuse.jpg");
+			const saturnTexture = loadTexture(
+				"../resources/saturn_diffuse.jpg"
+			);
 
-			const saturnRingTexture = loadTexture("../resources/saturn_ring_diffuse.png");
-
+			const saturnRingTexture = loadTexture(
+				"../resources/saturn_ring_diffuse.png"
+			);
 
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -423,7 +439,13 @@
 				return texture;
 			}
 
-			const renderPlanet = (model, shaderProgramP, texture, normalTexture, specularTexture) => {
+			const renderPlanet = (
+				model,
+				shaderProgramP,
+				texture,
+				normalTexture,
+				specularTexture
+			) => {
 				shaderProgramP.bind();
 				shaderProgramP.setUniformMat4("model", model);
 				shaderProgramP.setUniform3f("lightPos", 0.0, 0.0, 0.0);
@@ -431,8 +453,8 @@
 				shaderProgramP.setUniform3f("lightColor", 2, 2, 2);
 
 				shaderProgramP.setUniform1f("lightConstant", 1.0);
-                shaderProgramP.setUniform1f("lightLinear", 0.09);
-                shaderProgramP.setUniform1f("lightQuadratic", 0.032);
+				shaderProgramP.setUniform1f("lightLinear", 0.09);
+				shaderProgramP.setUniform1f("lightQuadratic", 0.032);
 
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -472,7 +494,16 @@
 				);
 			}
 
-			function assignAttributes(pModel, pScale, pRotationPeriod, pOrbitalPeriod, pOrbitalRadius, pInitialPosition, pOrbitRotation, pPosition ){
+			function assignAttributes(
+				pModel,
+				pScale,
+				pRotationPeriod,
+				pOrbitalPeriod,
+				pOrbitalRadius,
+				pInitialPosition,
+				pOrbitRotation,
+				pPosition
+			) {
 				mat4.rotate(
 					pOrbitRotation,
 					pOrbitRotation,
@@ -481,37 +512,33 @@
 				);
 
 				// Apply the rotation matrix to the mercury's initial position
-				vec3.transformMat4(
-					pPosition,
-					pInitialPosition,
-					pOrbitRotation
-				);
+				vec3.transformMat4(pPosition, pInitialPosition, pOrbitRotation);
 
 				mat4.translate(pModel, pModel, pPosition);
-				mat4.scale(pModel, pModel, [
-					pScale,
-					pScale,
-					pScale,
-				]);
+				mat4.scale(pModel, pModel, [pScale, pScale, pScale]);
 				mat4.rotate(
 					pModel,
 					pModel,
 					Math.radians(pRotationPeriod),
 					[0.0, 1.0, 0.0]
 				);
-
 			}
 
 			// Function to render the ring
 			const renderRing = (model, shaderProgram, texture) => {
 				shaderProgram.bind();
 				shaderProgram.setUniformMat4("model", model);
-				
+
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				shaderProgram.setUniform1i("uTexture", 1);
 				gl.bindVertexArray(ringVAO);
-				gl.drawElements(gl.TRIANGLES, ringGeo.indices.length, gl.UNSIGNED_INT, 0);
+				gl.drawElements(
+					gl.TRIANGLES,
+					ringGeo.indices.length,
+					gl.UNSIGNED_INT,
+					0
+				);
 			};
 
 			gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -568,10 +595,16 @@
 				// Create a rotation matrix for the Earth's orbit around the Sun
 				const earthOrbitRotation = mat4.create();
 				const earthPosition = vec3.create();
-				assignAttributes(earthModel, earthScale, earthRotationPeriod, 
-					earthOrbitalPeriod, earthOrbitRadius, earthInitialPosition, 
-					earthOrbitRotation,earthPosition)
-				
+				assignAttributes(
+					earthModel,
+					earthScale,
+					earthRotationPeriod,
+					earthOrbitalPeriod,
+					earthOrbitRadius,
+					earthInitialPosition,
+					earthOrbitRotation,
+					earthPosition
+				);
 
 				// Moon model
 
@@ -631,17 +664,23 @@
 				// Create a rotation matrix for the mercury's orbit around the Sun
 				const mercuryOrbitRotation = mat4.create();
 				const mercuryPosition = vec3.create();
-				assignAttributes(mercuryModel, mercuryScale, mercuryRotationPeriod, 
-					mercuryOrbitalPeriod, mercuryOrbitRadius, mercuryInitialPosition, 
-					mercuryOrbitRotation,mercuryPosition)
-
+				assignAttributes(
+					mercuryModel,
+					mercuryScale,
+					mercuryRotationPeriod,
+					mercuryOrbitalPeriod,
+					mercuryOrbitRadius,
+					mercuryInitialPosition,
+					mercuryOrbitRotation,
+					mercuryPosition
+				);
 
 				//Venus model
 				const venusModel = mat4.create();
 				const venusScale = 0.7;
 				const venusRotationPeriod = time * 60.0;
 				const venusOrbitalPeriod = time * 2.4; // Radius of the venus's orbit
-				const venusOrbitRadius = 5.60;
+				const venusOrbitRadius = 5.6;
 
 				// Initial venus position in the xz-plane
 				const venusInitialPosition = [venusOrbitRadius, 0.0, 0.0];
@@ -649,10 +688,17 @@
 				// Create a rotation matrix for the venus's orbit around the Sun
 				const venusOrbitRotation = mat4.create();
 				const venusPosition = vec3.create();
-				assignAttributes(venusModel, venusScale, venusRotationPeriod, 
-					venusOrbitalPeriod, venusOrbitRadius, venusInitialPosition, 
-					venusOrbitRotation,venusPosition)
-				
+				assignAttributes(
+					venusModel,
+					venusScale,
+					venusRotationPeriod,
+					venusOrbitalPeriod,
+					venusOrbitRadius,
+					venusInitialPosition,
+					venusOrbitRotation,
+					venusPosition
+				);
+
 				//mars model
 				const marsModel = mat4.create();
 				const marsScale = 1.2;
@@ -666,9 +712,16 @@
 				// Create a rotation matrix for the mars's orbit around the Sun
 				const marsOrbitRotation = mat4.create();
 				const marsPosition = vec3.create();
-				assignAttributes(marsModel, marsScale, marsRotationPeriod, 
-					marsOrbitalPeriod, marsOrbitRadius, marsInitialPosition, 
-					marsOrbitRotation,marsPosition)
+				assignAttributes(
+					marsModel,
+					marsScale,
+					marsRotationPeriod,
+					marsOrbitalPeriod,
+					marsOrbitRadius,
+					marsInitialPosition,
+					marsOrbitRotation,
+					marsPosition
+				);
 
 				//mars jupiter
 				const jupiterModel = mat4.create();
@@ -683,9 +736,16 @@
 				// Create a rotation matrix for the jupiter's orbit around the Sun
 				const jupiterOrbitRotation = mat4.create();
 				const jupiterPosition = vec3.create();
-				assignAttributes(jupiterModel, jupiterScale, jupiterRotationPeriod, 
-					jupiterOrbitalPeriod, jupiterOrbitRadius, jupiterInitialPosition, 
-					jupiterOrbitRotation,jupiterPosition)
+				assignAttributes(
+					jupiterModel,
+					jupiterScale,
+					jupiterRotationPeriod,
+					jupiterOrbitalPeriod,
+					jupiterOrbitRadius,
+					jupiterInitialPosition,
+					jupiterOrbitRotation,
+					jupiterPosition
+				);
 
 				//mars saturn
 				const saturnModel = mat4.create();
@@ -700,19 +760,33 @@
 				// Create a rotation matrix for the saturn's orbit around the Sun
 				const saturnOrbitRotation = mat4.create();
 				const saturnPosition = vec3.create();
-				assignAttributes(saturnModel, saturnScale, saturnRotationPeriod, 
-					saturnOrbitalPeriod, saturnOrbitRadius, saturnInitialPosition, 
-					saturnOrbitRotation,saturnPosition)
+				assignAttributes(
+					saturnModel,
+					saturnScale,
+					saturnRotationPeriod,
+					saturnOrbitalPeriod,
+					saturnOrbitRadius,
+					saturnInitialPosition,
+					saturnOrbitRotation,
+					saturnPosition
+				);
 
 				//ring
 				const ringModel = mat4.create();
-				mat4.rotate(ringModel, ringModel, Math.radians(27), [0.0, 0.0, 1.0]);
-				mat4.rotate(ringModel, ringModel, saturnRotationPeriod, [0.0, 1.0, 0.0]);
+				mat4.rotate(
+					ringModel,
+					ringModel,
+					Math.radians(27),
+					[0.0, 0.0, 1.0]
+				);
+				mat4.rotate(
+					ringModel,
+					ringModel,
+					saturnRotationPeriod,
+					[0.0, 1.0, 0.0]
+				);
 				mat4.scale(ringModel, ringModel, [2, 2, 2]);
 				mat4.translate(ringModel, ringModel, saturnPosition);
-
-
-
 
 				// Bind
 				ubo.bind();
@@ -723,29 +797,70 @@
 				// Render the sun
 				renderSun(sunModel, sunTexture, sphereProgram);
 
-				renderPlanet(earthModel,earthProgram, earthTexture, earthNormalTexture, earthSpecularTexture);
+				renderPlanet(
+					earthModel,
+					earthProgram,
+					earthTexture,
+					earthNormalTexture,
+					earthSpecularTexture
+				);
 
 				// Render the moon
-				renderPlanet(moonModel, moonProgram, moonTexture,moonTexture, moonTexture);
+				renderPlanet(
+					moonModel,
+					moonProgram,
+					moonTexture,
+					moonTexture,
+					moonTexture
+				);
 
 				//Render Mercury
-				renderPlanet(mercuryModel, mercuryProgram, mercuryTexture, mercuryTexture, mercuryTexture);
+				renderPlanet(
+					mercuryModel,
+					mercuryProgram,
+					mercuryTexture,
+					mercuryTexture,
+					mercuryTexture
+				);
 
 				//Render Venus
-				renderPlanet(venusModel, venusProgram, venusTexture, venusTexture, venusTexture);
+				renderPlanet(
+					venusModel,
+					venusProgram,
+					venusTexture,
+					venusTexture,
+					venusTexture
+				);
 
 				//Render mars
-				renderPlanet(marsModel, marsProgram, marsTexture, marsTexture, marsTexture);
+				renderPlanet(
+					marsModel,
+					marsProgram,
+					marsTexture,
+					marsTexture,
+					marsTexture
+				);
 
 				//Render jupiter
-				renderPlanet(jupiterModel, jupiterProgram, jupiterTexture, jupiterTexture, jupiterTexture);
+				renderPlanet(
+					jupiterModel,
+					jupiterProgram,
+					jupiterTexture,
+					jupiterTexture,
+					jupiterTexture
+				);
 
 				//Render saturn
-				renderPlanet(saturnModel, saturnProgram, saturnTexture, saturnTexture, saturnTexture);
+				renderPlanet(
+					saturnModel,
+					saturnProgram,
+					saturnTexture,
+					saturnTexture,
+					saturnTexture
+				);
 
 				//Render ring
 				renderRing(ringModel, saturnRingProgram, saturnRingTexture);
-
 
 				requestAnimationFrame(renderFunc);
 			}
@@ -756,7 +871,6 @@
 				false
 			);
 			document.addEventListener("keydown", function (event) {
-		
 				var cameraSpeed = 0.4; // Speed
 				const cameraFrontNormalized = vec3.normalize(
 					vec3.create(),
