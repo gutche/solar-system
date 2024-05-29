@@ -214,6 +214,9 @@
 
 			const mercuryProgram = new ShaderProgram();
 			loadPlanetProgram(mercuryProgram);
+
+			const venusProgram = new ShaderProgram();
+			loadPlanetProgram(venusProgram);
 			
 
 			// variables to control translation and rotation
@@ -240,7 +243,7 @@
 			ubo.attachProgram(earthProgram);
 			ubo.attachProgram(moonProgram);
 			ubo.attachProgram(mercuryProgram);
-
+			ubo.attachProgram(venusProgram);
 
 
 			// ---------------------------------------------------
@@ -317,6 +320,8 @@
 				"../resources/mercury_diffuse.jpg"
 			);
 			const moonTexture = loadTexture("../resources/moon.png");
+
+			const venusTexture = loadTexture("../resources/venus_diffuse.jpg");
 
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -551,6 +556,23 @@
 					mercuryOrbitRotation,mercuryPosition)
 
 
+				//Venus model
+				const venusModel = mat4.create();
+				const venusScale = 0.7;
+				const venusRotationPeriod = time * 60.0;
+				const venusOrbitalPeriod = time * 2.4; // Radius of the venus's orbit
+				const venusOrbitRadius = 5.60;
+
+				// Initial venus position in the xz-plane
+				const venusInitialPosition = [venusOrbitRadius, 0.0, 0.0];
+
+				// Create a rotation matrix for the venus's orbit around the Sun
+				const venusOrbitRotation = mat4.create();
+				const venusPosition = vec3.create();
+				assignAttributes(venusModel, venusScale, venusRotationPeriod, 
+					venusOrbitalPeriod, venusOrbitRadius, venusInitialPosition, 
+					venusOrbitRotation,venusPosition)
+
 
 				// Bind
 				ubo.bind();
@@ -568,6 +590,10 @@
 
 				//Render Mercury
 				renderPlanet(mercuryModel, mercuryProgram, mercuryTexture, mercuryTexture, mercuryTexture);
+
+				//Render Venus
+				renderPlanet(venusModel, venusProgram, venusTexture, venusTexture, venusTexture);
+
 
 
 				requestAnimationFrame(renderFunc);
