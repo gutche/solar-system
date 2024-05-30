@@ -110,9 +110,9 @@ function createSphere( )
 
 function createRing( )
 {
-	const innerRadius = 12;
-	const outerRadius = 12;
-	const thetaSegments = 30;
+	const innerRadius = 1;
+	const outerRadius = 1.6;
+	const thetaSegments = 40;
 	const phiSegments = 13;
 	const thetaStart = 0;
 	const thetaLength = 2.0 * Math.PI;
@@ -154,8 +154,8 @@ function createRing( )
 
 			// uv
 
-			uv[ 0 ] = ( vertex[ 0 ] / outerRadius + 1 ) / 2;
-			uv[ 1 ] = ( vertex[ 1 ] / outerRadius + 1 ) / 2;
+			uv[ 0 ] = (radius - outerRadius) / (innerRadius - outerRadius);
+			uv[ 1 ] = i / thetaSegments;
 
 			uvs.push( ...uv );
 
