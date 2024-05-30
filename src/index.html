@@ -464,6 +464,7 @@
 			) => {
 				shaderProgramP.bind();
 				shaderProgramP.setUniformMat4("model", model);
+				
 				shaderProgramP.setUniform3f("lightPos", 0.0, 0.0, 0.0);
 				shaderProgramP.setUniform3f("viewPos", cameraPosition);
 				shaderProgramP.setUniform3f("lightColor", 2, 2, 2);
@@ -556,6 +557,14 @@
 				gl.activeTexture(gl.TEXTURE1);
 				gl.bindTexture(gl.TEXTURE_2D, texture);
 				shaderProgram.setUniform1i("uTexture", 1);
+
+				gl.activeTexture(gl.TEXTURE2);
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				shaderProgram.setUniform1i("uNormalTexture", 2);
+
+				gl.activeTexture(gl.TEXTURE3);
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				shaderProgram.setUniform1i("uSpecularTexture", 3);
 
 				gl.bindVertexArray(ringVAO);
 				gl.drawElements(
